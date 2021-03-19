@@ -8,3 +8,6 @@ NOT_USED/
 
 # configuration files
 config/
+
+# logs
+debug.log

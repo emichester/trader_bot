@@ -6,6 +6,7 @@ mi api:
 import requests
 import time
 from bs4 import BeautifulSoup
+import logging
 
 from config.datos import TOKEN, MI_CHAT_ID
 
@@ -27,21 +28,30 @@ def see_price(name="GME", PRICE=225.0, cont=0):
 
     soup = BeautifulSoup(html, 'html.parser')
 
-    price = soup.find_all('div',{"class" : "D(ib) Mend(20px)"})
-    price = [element.text.strip() for element in price[0]]
-    price = float(price[0])
-
     try:
-        price_AfHo = soup.find_all('p',{"class" : "Fz(12px) C($tertiaryColor) My(0px) D(ib) Va(b)"})
-        price_AfHo = [element.text.strip() for element in price_AfHo]
-        price_AfHo = float(price_AfHo[0][0:6])
-    except:
-        cont+=1
-        price_AfHo = 0
+        price = soup.find_all('div',{"class" : "D(ib) Mend(20px)"})
+        price = [element.text.strip() for element in price[0]]
+        price = float(price[0])
+        logging.info("Precio: %s"%str(price))
+        
+        try:
+            price_AfHo = soup.find_all('p',{"class" : "Fz(12px) C($tertiaryColor) My(0px) D(ib) Va(b)"})
+            price_AfHo = [element.text.strip() for element in price_AfHo]
+            price_AfHo = float(price_AfHo[0][0:6])
+            logging.info("Precio after hours: %s"%str(price_AfHo))
 
-    if price >= PRICE:
-        msg = "Vende que GME está a %f"%price
-        telegram_bot_sendtext(msg, MI_CHAT_ID)
+        except Exception as e:
+            price_AfHo = 0
+            logging.warn("Problemas, excepción %i: %s"%(cont, str(e)))
+            logging.warn("Probablemente el mercado esté abierto y no aparezca este campo")
+
+        if price >= PRICE:
+            msg = "Vende que GME está a %f"%price
+            telegram_bot_sendtext(msg, MI_CHAT_ID)
+
+    except Exception as e:
+        cont+=1
+        logging.warn("Problemas, excepción %i: %s"%(cont, str(e)))
 
     if cont > 10:
         msg = "OJO con la API que está dando problemas"
@@ -51,12 +61,17 @@ def see_price(name="GME", PRICE=225.0, cont=0):
     return cont
     
 def main():
+    with open("debug.log","w") as f:
+        f.write("")
+
+    logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
 
     PRICE = 220.0
     cont = 0
 
     while True:
         cont = see_price("GME", PRICE, cont)
+        logging
         time.sleep(1)
         
 
