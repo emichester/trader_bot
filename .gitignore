@@ -1,0 +1,10 @@
+## main package
+# environment
+.venv/
+venv.sh
+
+# test folder
+NOT_USED/
+
+# configuration files
+config/
