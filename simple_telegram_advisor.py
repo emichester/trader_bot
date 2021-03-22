@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import requests
 import time
 from bs4 import BeautifulSoup
