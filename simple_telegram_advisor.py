@@ -65,7 +65,7 @@ def main():
     price = {
         "GME" : 220.0,
         "AMC" : 14.0,
-        "PLUG" : 39.0,
+        "PLUG" : 40.0,
     }
 
     cont = 0
