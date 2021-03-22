@@ -1,8 +1,3 @@
-"""
-mi api:
-    https://stackoverflow.com/questions/20975400/get-div-from-html-with-python
-    https://stackoverflow.com/questions/40333267/extracting-content-within-multiple-span-tags-in-beautifulsoup
-"""
 import requests
 import time
 from bs4 import BeautifulSoup
@@ -46,7 +41,7 @@ def see_price(name="GME", PRICE=225.0, cont=0):
             logging.warn("Probablemente el mercado esté abierto y no aparezca este campo")
 
         if price >= PRICE:
-            msg = "Vende que GME está a %f"%price
+            msg = "Vende que %s está a %f"%(name,price)
             telegram_bot_sendtext(msg, MI_CHAT_ID)
 
     except Exception as e:
@@ -66,11 +61,18 @@ def main():
 
     logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
 
-    PRICE = 220.0
+    price = {
+        "GME" : 220.0,
+        "AMC" : 14.0,
+        "PLUG" : 39.0,
+    }
+
     cont = 0
 
     while True:
-        cont = see_price("GME", PRICE, cont)
+        cont = see_price("GME", price["GME"], cont)
+        cont = see_price("AMC", price["AMC"], cont)
+        cont = see_price("PLUG", price["PLUG"], cont)
         logging
         time.sleep(1)
         
