@@ -62,18 +62,13 @@ def main():
 
     logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
 
-    price = {
-        "GME" : 220.0,
-        "AMC" : 14.0,
-        "PLUG" : 40.0,
-    }
+    from config.stock_list import stocks
 
     cont = 0
 
     while True:
-        cont = see_price("GME", price["GME"], cont)
-        cont = see_price("AMC", price["AMC"], cont)
-        cont = see_price("PLUG", price["PLUG"], cont)
+        for stock in stocks:
+            cont = see_price(stock, price[stock], cont)
         logging
         time.sleep(1)
         

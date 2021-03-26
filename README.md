@@ -9,7 +9,7 @@ This is a simple api to get information of stock at stock market
 ```bash
 $ git clone https://github.com/emichester/trader_API.git
 $ cd trader_API
-$ mkdir config && touch config/data.py
+$ mkdir config && touch config/data.py && touch config/stock_list.py
 $ echo "
 TOKEN = 'your-bot-token'
 MI_CHAT_ID = you-chat-id ### int format e.g. 123456789
@@ -27,23 +27,14 @@ If you don't have pip install it (python3-pip).
 
 ## Usage
 
-In the main function change the following lines. For example:
+Open _"config/stock_list.py"_ and modify the dictionary as you want. For example:
 
 ```python
-    price = {
-        "GME" : 220.0,
-        "AMC" : 14.0,
-        "PLUG" : 39.0,
-    }
-
-    cont = 0
-
-    while True:
-        cont = see_price("GME", price["GME"], cont)
-        cont = see_price("AMC", price["AMC"], cont)
-        cont = see_price("PLUG", price["PLUG"], cont)
-        logging
-        time.sleep(1)
+stocks = {
+    "GME" : 220.0,
+    "AMC" : 14.0,
+    "PLUG" : 39.0,
+}
 ```
 
 Finally run the bot with the following comand.
