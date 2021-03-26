@@ -68,7 +68,7 @@ def main():
 
     while True:
         for stock in stocks:
-            cont = see_price(stock, price[stock], cont)
+            cont = see_price(stock, stocks[stock], cont)
         logging
         time.sleep(1)
         
