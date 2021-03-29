@@ -1,5 +1,5 @@
 # trader_API
-This is a simple api to get information of stock at stock market
+This is a simple api to get information of stocks at stock market. Custom price notifications given high and low thresholds.
 
 ## Setup
 
@@ -31,9 +31,9 @@ Open _"config/stock_list.py"_ and modify the dictionary as you want. For example
 
 ```python
 stocks = {
-    "GME" : 220.0,
-    "AMC" : 14.0,
-    "PLUG" : 39.0,
+    "GME" : {'high' : 225.0 , 'low' : 170.0 },
+    "AMC" : {'high' : 14.0 , 'low' : 9.0},
+    "PLUG" : {'high' : 40.0 , 'low' : 30.0},
 }
 ```
 
@@ -42,5 +42,13 @@ Finally run the bot with the following comand.
 ```bash
 $ ./simple_telegram_advisor.py
 ```
+
+## ToDo
+- [x] Buy notice
+- [x] Sell notice
+- [ ] After-hours and pre-market report and analysis
+- [ ] Threaded version
+
+
 [//]: # "https://stackoverflow.com/questions/20975400/get-div-from-html-with-python"
 [//]: # "https://stackoverflow.com/questions/40333267/extracting-content-within-multiple-span-tags-in-beautifulsoup"

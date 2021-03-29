@@ -16,7 +16,7 @@ def telegram_bot_sendtext(bot_message, chat_id):
 
     return response.json()
 
-def see_price(name="GME", PRICE=225.0, cont=0):
+def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=0):
     url = 'https://finance.yahoo.com/quote/%s?p=%s'%(name,name)
 
     req = requests.get(url)
@@ -41,8 +41,11 @@ def see_price(name="GME", PRICE=225.0, cont=0):
             logging.warn("Problemas, excepción %i: %s"%(cont, str(e)))
             logging.warn("Probablemente el mercado esté abierto y no aparezca este campo")
 
-        if price >= PRICE:
-            msg = "Vende que %s está a %f"%(name,price)
+        if price >= PRICE_HIGH:
+            msg = "Vende que %s está a %.2f"%(name,price)
+            telegram_bot_sendtext(msg, MI_CHAT_ID)
+        elif price <= PRICE_LOW:
+            msg = "Compra que %s está a %.2f"%(name,price)
             telegram_bot_sendtext(msg, MI_CHAT_ID)
 
     except Exception as e:
@@ -68,10 +71,15 @@ def main():
 
     while True:
         for stock in stocks:
-            cont = see_price(stock, stocks[stock], cont)
-        logging
+            cont = see_price(stock, 
+                stocks[stock]['high'],
+                stocks[stock]['low'],
+                cont)
         time.sleep(1)
         
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('trader_API exited with code 0')
