@@ -9,11 +9,12 @@ This is a simple api to get information of stocks at stock market. Custom price 
 ```bash
 $ git clone https://github.com/emichester/trader_API.git
 $ cd trader_API
-$ mkdir config && touch config/data.py && touch config/stock_list.py
+$ mkdir config && touch config/data.py && touch config/stock_list.py && touch config/RPi_utils.py
 $ echo "
 TOKEN = 'your-bot-token'
 MI_CHAT_ID = you-chat-id ### int format e.g. 123456789
 " > config/data.py
+$ echo "RPi_relax_time = 0.5" > config/RPi_utils.py
 $ chmod +x simple_telegram_advisor.py
 ```
 
@@ -42,6 +43,8 @@ Finally run the bot with the following comand.
 ```bash
 $ ./simple_telegram_advisor.py
 ```
+
+Change the `RPi_relax_time` in the file _"config/RPi_utils.py"_ deppending on the CPU usage you want to be used and if you need very high precision use `RPi_relax_time = 0.0` (if you use a regular PC use `0.0` also).
 
 ## ToDo
 - [x] Buy notice

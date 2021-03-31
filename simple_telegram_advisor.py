@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import logging
 
 from config.data import TOKEN, MI_CHAT_ID
+from config.RPi_utils import RPi_relax_time
 
 def telegram_bot_sendtext(bot_message, chat_id):
     
@@ -81,6 +82,7 @@ def main():
                 th
                 ) for th, stock in enumerate(stocks)]
         logging.debug("\tTotal time: %f"%(time.time()-t))
+        time.sleep(RPi_relax_time)
         
 
 if __name__ == "__main__":
