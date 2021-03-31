@@ -66,24 +66,21 @@ def main():
     logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
     logging.getLogger("urllib3").setLevel(logging.WARNING) # requests DEBUG inf ignored
 
-    from threading import Thread
+    import concurrent.futures
     from config.stock_list import stocks
 
     cont = [0]
 
     while True:
         t = time.time()
-        threads = []
-        for th, stock in enumerate(stocks):
-            threads.append(Thread(target=see_price, args=(
+        with concurrent.futures.ThreadPoolExecutor() as executor: # optimally defined number of threads
+            res = [executor.submit(see_price,
                 stock, 
                 stocks[stock]['high'],
                 stocks[stock]['low'],
                 cont,
                 th
-            )))
-            threads[th].start()
-        [thread.join() for thread in threads]
+                ) for th, stock in enumerate(stocks)]
         logging.debug("\tTotal time: %f"%(time.time()-t))
         time.sleep(RPi_relax_time)
         

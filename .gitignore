@@ -14,3 +14,4 @@ debug.log
 
 # files
 simple_telegram_advisor.py.original
+simple_telegram_advisor.py.threading_lib_version
