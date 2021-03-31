@@ -16,9 +16,9 @@ def telegram_bot_sendtext(bot_message, chat_id):
 
     return response.json()
 
-def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=0):
+def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=[0], th=0):
     url = 'https://finance.yahoo.com/quote/%s?p=%s'%(name,name)
-
+    
     req = requests.get(url)
     html = req.text
 
@@ -28,18 +28,19 @@ def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=0):
         price = soup.find_all('div',{"class" : "D(ib) Mend(20px)"})
         price = [element.text.strip() for element in price[0]]
         price = float(price[0])
-        logging.info("Precio: %s"%str(price))
+        logging.info("\tTh%i %s Precio: %s"%(th,name,str(price)))
         
         try:
-            price_AfHo = soup.find_all('p',{"class" : "Fz(12px) C($tertiaryColor) My(0px) D(ib) Va(b)"})
-            price_AfHo = [element.text.strip() for element in price_AfHo]
-            price_AfHo = float(price_AfHo[0][0:6])
-            logging.info("Precio after hours: %s"%str(price_AfHo))
+            debug_price_AfHo = soup.find_all('p',{"class" : "Fz(12px) C($tertiaryColor) My(0px) D(ib) Va(b)"})
+            price_AfHo = [element.text.strip() for element in debug_price_AfHo]
+            price_AfHo = price_AfHo[0].split()
+            price_AfHo = float(price_AfHo[0])
+            logging.info("\tTh%i %s Precio after hours: %s"%(th,name,str(price_AfHo)))
 
         except Exception as e:
+            logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
+            logging.warning("\tTh%i %s price_AfHo = %s"%(th,name,debug_price_AfHo))
             price_AfHo = 0
-            logging.warn("Problemas, excepción %i: %s"%(cont, str(e)))
-            logging.warn("Probablemente el mercado esté abierto y no aparezca este campo")
 
         if price >= PRICE_HIGH:
             msg = "Vende que %s está a %.2f"%(name,price)
@@ -49,37 +50,42 @@ def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=0):
             telegram_bot_sendtext(msg, MI_CHAT_ID)
 
     except Exception as e:
-        cont+=1
-        logging.warn("Problemas, excepción %i: %s"%(cont, str(e)))
+        cont[0]+=1
+        logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
 
-    if cont > 10:
+    if cont[0] > 10:
         msg = "OJO con la API que está dando problemas"
         telegram_bot_sendtext(msg, MI_CHAT_ID)
-        cont = 0
-    
-    return cont
+        cont[0] = 0
     
 def main():
     with open("debug.log","w") as f:
         f.write("")
 
     logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
+    logging.getLogger("urllib3").setLevel(logging.WARNING) # requests DEBUG inf ignored
 
+    import concurrent.futures
     from config.stock_list import stocks
 
-    cont = 0
+    cont = [0]
 
     while True:
-        for stock in stocks:
-            cont = see_price(stock, 
+        t = time.time()
+        with concurrent.futures.ThreadPoolExecutor() as executor: # optimally defined number of threads
+            res = [executor.submit(see_price,
+                stock, 
                 stocks[stock]['high'],
                 stocks[stock]['low'],
-                cont)
-        time.sleep(1)
+                cont,
+                th
+                ) for th, stock in enumerate(stocks)]
+        logging.debug("\tTotal time: %f"%(time.time()-t))
         
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print('trader_API exited with code 0')
+        logging.warning("Exiting with code 0 on %s"%str(time.ctime()))
+        print("\n")

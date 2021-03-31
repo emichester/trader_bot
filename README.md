@@ -47,8 +47,12 @@ $ ./simple_telegram_advisor.py
 - [x] Buy notice
 - [x] Sell notice
 - [ ] After-hours and pre-market report and analysis
-- [ ] Threaded version
+- [x] Threaded version
 
 
 [//]: # "https://stackoverflow.com/questions/20975400/get-div-from-html-with-python"
 [//]: # "https://stackoverflow.com/questions/40333267/extracting-content-within-multiple-span-tags-in-beautifulsoup"
+[//]: # "https://stackoverflow.com/questions/62007674/multi-thread-requests-python3"
+[//]: # "https://stackoverflow.com/questions/53648211/attributeerror-module-concurrent-has-no-attribute-futures-when-i-try-parall"
+[//]: # "https://stackoverflow.com/questions/11029717/how-do-i-disable-log-messages-from-the-requests-library"
+[//]: # "https://stackoverflow.com/questions/8113782/split-string-on-whitespace-in-python"
