@@ -11,3 +11,6 @@ config/
 
 # logs
 debug.log
+
+# files
+simple_telegram_advisor.py.original
