@@ -34,9 +34,13 @@ def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=[0], th=0):
         try:
             debug_price_AfHo = soup.find_all('p',{"class" : "Fz(12px) C($tertiaryColor) My(0px) D(ib) Va(b)"})
             price_AfHo = [element.text.strip() for element in debug_price_AfHo]
-            price_AfHo = price_AfHo[0].split()
-            price_AfHo = float(price_AfHo[0])
-            logging.info("\tTh%i %s Precio after hours: %s"%(th,name,str(price_AfHo)))
+            if price_AfHo == []:
+                price_AfHo = 0
+                logging.debug("\tTh%i %s No se encuentra este campo, horas de mercado abierto"%(th,name))
+            else:
+                price_AfHo = price_AfHo[0].split()
+                price_AfHo = float(price_AfHo[0])
+                logging.info("\tTh%i %s Precio after hours: %s"%(th,name,str(price_AfHo)))
 
         except Exception as e:
             logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
