@@ -1,4 +1,4 @@
-# trader_API
+# trader_bot
 This is a simple api to get information of stocks at stock market. Custom price notifications given high and low thresholds.
 
 ## Setup
