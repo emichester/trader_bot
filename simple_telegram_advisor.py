@@ -3,9 +3,29 @@ import requests
 import time
 from bs4 import BeautifulSoup
 import logging
+import threading
 
 from config.data import TOKEN, MI_CHAT_ID
 from config.RPi_utils import RPi_relax_time
+
+## global variables
+ongoing = False
+
+class StoppableThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition.
+    https://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread
+    """
+    def __init__(self,  *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
 
 def telegram_bot_sendtext(bot_message, chat_id):
     
@@ -69,15 +89,19 @@ def main():
 
     logging.basicConfig(filename="debug.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
     logging.getLogger("urllib3").setLevel(logging.WARNING) # requests DEBUG inf ignored
+    
+    t = time.localtime()
+    logging.debug("\tMain thread ongoing at %d:%d"%(t.tm_hour,t.tm_min))
 
-    import concurrent.futures
+    import os, concurrent.futures
     from config.stock_list import stocks
 
     cont = [0]
 
-    while True:
+    while ongoing:
+        print(ongoing)
         t = time.time()
-        with concurrent.futures.ThreadPoolExecutor() as executor: # optimally defined number of threads
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(see_price,
                 stock, 
                 stocks[stock]['high'],
@@ -87,11 +111,34 @@ def main():
                 ) for th, stock in enumerate(stocks)]
         logging.debug("\tTotal time: %f"%(time.time()-t))
         time.sleep(RPi_relax_time)
-        
+    t = time.localtime()
+    logging.debug("\tMain thread stoped at %d:%d"%(t.tm_hour,t.tm_min))
 
 if __name__ == "__main__":
     try:
-        main()
+        import argparse, time
+        parser = argparse.ArgumentParser(description="Stock Market bot")
+        parser.add_argument('-p','--programed',action='store_true',
+            help="Scheduled start time of the bot")
+        args = parser.parse_args()
+        if args.programed:
+            while True:
+                t = time.localtime()
+                if ( 14 <= t.tm_hour < 23) and not ongoing:
+                    ongoing = True
+                    main_thread = StoppableThread(target=main)
+                    main_thread.start()
+                if (t.tm_hour >= 23 or t.tm_hour < 14):
+                    ongoing = False
+                    try:
+                        if main_thread.is_alive():
+                            main_thread.stop()
+                    except NameError:
+                        pass
+                time.sleep(60)
+        else:
+            ongoing = True
+            main()
     except KeyboardInterrupt:
         logging.warning("Exiting with code 0 on %s"%str(time.ctime()))
         print("\n")
