@@ -99,7 +99,6 @@ def main():
     cont = [0]
 
     while ongoing:
-        print(ongoing)
         t = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(see_price,
