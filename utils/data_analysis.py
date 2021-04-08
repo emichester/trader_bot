@@ -23,9 +23,13 @@ y = res.to_numpy(dtype=np.float32)
 x = [i for i in range(len(y))]
 x = np.array(x,dtype=np.float32)
 dy = diff(x,y)
+ddy = diff(x[1:],dy)
+dddy = diff(x[2:],ddy)
 
-# plt.plot(res, color='r')
-# plt.plot(dy, color='b')
+# plt.plot(x[3:],res[3:], color='r')
+# plt.plot(x[3:],dy[2:], color='b')
+# plt.plot(x[3:],ddy[1:], color='g')
+# plt.plot(x[3:],dddy, color='y')
 # plt.show()
 
 path = "/home/emilio/PaginasWeb/trader_API/debug.log"
@@ -42,7 +46,7 @@ for line in text:
 
 res = np.array(val,dtype=np.float32)
 y = res#.to_numpy(dtype=np.float32)
-x = [i for i in range(len(y))]
+x = [i*10 for i in range(len(y))]
 x = np.array(x,dtype=np.float32)
 dy = diff(x,y)
 ddy = diff(x[1:],dy)
@@ -50,7 +54,7 @@ dddy = diff(x[2:],ddy)
 
 print(y)
 
-# plt.plot(x[3:],res[3:], color='r')
+plt.plot(x[3:],res[3:], color='r')
 plt.plot(x[3:],dy[2:], color='b')
 plt.plot(x[3:],ddy[1:], color='g')
 plt.plot(x[3:],dddy, color='y')
