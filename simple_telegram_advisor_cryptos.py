@@ -12,7 +12,7 @@ import threading
 import json
 
 from config.data import TOKEN, MI_CHAT_ID
-from config.RPi_utils import RPi_relax_time
+from config.RPi_utils import RPi_relax_time, CRYPTO_time 
 
 ## global variables
 ongoing = False
@@ -52,7 +52,7 @@ def retrieve_crypto_price():
     # symbol, name and price
     return df[['Symbol','Name','Price (Intraday)']]
 
-def get_price(symbol):
+def get_price(df, symbol):
     # select the ones you want
     return df.loc[ df['Symbol'] == symbol ]['Price (Intraday)'].values[0]
 
@@ -62,7 +62,9 @@ def analyse(vector, delta_t):
 def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont=[0], th=0):
     try:
 
-        price = get_price(symbol)
+        price = get_price(df, symbol)
+
+        logging.info("\tTh%i %s Precio: %s"%(th,symbol,str(price)))
 
         if price >= PRICE_HIGH:
             msg = "Vende que %s está a %.2f"%(name,price)
@@ -76,10 +78,10 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
         logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
 
     cont[0]+=1
-        logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
+    logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
     
 def main():
-    with open("debug.log","w") as f:
+    with open("debug_cryptos.log","w") as f:
         f.write("")
 
     logging.basicConfig(filename="debug_cryptos.log",level=logging.DEBUG,format="%(asctime)s:%(levelname)s:%(message)s")
@@ -91,6 +93,8 @@ def main():
     import os, concurrent.futures
     from config.crypto_list import cryptos
 
+    global ongoing
+
     cont = [0]
 
     while ongoing:
@@ -98,6 +102,7 @@ def main():
         df = retrieve_crypto_price()
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(notify_by_price,
+                df,
                 symbol, 
                 cryptos[symbol]['high'],
                 cryptos[symbol]['low'],
@@ -105,13 +110,15 @@ def main():
                 th
                 ) for th, symbol in enumerate(cryptos)]
         logging.debug("\tTotal time: %f"%(time.time()-t))
-        time.sleep(RPi_relax_time)
+        time.sleep(CRYPTO_time)
     t = time.localtime()
     logging.debug("\tMain thread stoped at %d:%d"%(t.tm_hour,t.tm_min))
 
 if __name__ == "__main__":
     try:
+        ongoing = True
         main()
     except KeyboardInterrupt:
+        ongoing = False
         logging.warning("Exiting with code 0 on %s"%str(time.ctime()))
         print("\n")
