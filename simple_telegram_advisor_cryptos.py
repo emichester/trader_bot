@@ -51,7 +51,18 @@ def retrieve_crypto_price():
     html = html.text
 
     # read html and look for tables
-    df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")[0]
+    df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")
+#     logging.debug("""
+# #############################################################################
+# #############################################################################
+#                                 Dataframe
+# #############################################################################
+# #############################################################################
+# %s
+# #############################################################################
+# #############################################################################
+# """%df)
+    df = df[0]
 
     # symbol, name and price
     return df[['Symbol','Name','Price (Intraday)']]
@@ -68,7 +79,7 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
 
         price = get_price(df, symbol)
 
-        logging.info("\tTh%i %s Precio: %s"%(th,symbol,str(price)))
+        logging.info("\t----> Th%i %s Precio: %s"%(th,symbol,str(price)))
 
         if price >= PRICE_HIGH:
             msg = "Vende que %s está a %.2f"%(symbol,price)
