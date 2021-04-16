@@ -45,6 +45,8 @@ def telegram_bot_sendtext(bot_message, chat_id):
 
 def retrieve_crypto_price():
     url = "https://finance.yahoo.com/cryptocurrencies/"
+    
+    #logging.debug('WEB %s'%str(requests(url).text))
 
     # read html and look for tables
     df = pd.read_html(url, encoding = 'utf-8', decimal=".", thousands=",")[0]
@@ -67,10 +69,10 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
         logging.info("\tTh%i %s Precio: %s"%(th,symbol,str(price)))
 
         if price >= PRICE_HIGH:
-            msg = "Vende que %s está a %.2f"%(name,price)
+            msg = "Vende que %s está a %.2f"%(symbol,price)
             telegram_bot_sendtext(msg, MI_CHAT_ID)
         elif price <= PRICE_LOW:
-            msg = "Compra que %s está a %.2f"%(name,price)
+            msg = "Compra que %s está a %.2f"%(symbol,price)
             telegram_bot_sendtext(msg, MI_CHAT_ID)
 
     except Exception as e:
