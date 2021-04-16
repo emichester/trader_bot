@@ -9,7 +9,7 @@ This is a simple api to get information of stocks at stock market. Custom price 
 ```bash
 $ git clone https://github.com/emichester/trader_API.git
 $ cd trader_API
-$ mkdir config && touch config/data.py && touch config/stock_list.py && touch config/RPi_utils.py
+$ mkdir config && touch config/data.py && touch config/stock_list.py && touch config/RPi_utils.py && touch config/crypto_list.py
 $ echo "
 TOKEN = 'your-bot-token'
 MI_CHAT_ID = you-chat-id ### int format e.g. 123456789
@@ -21,6 +21,8 @@ RPi_relax_time = 0.5
 # time_d >= Nºstock * 3600 * 9 / 48000 ---> per day
 # 
 # RPi_relax_time = max(time_h,time_d)
+# 
+# CRYPTO_time = 10
 " > config/RPi_utils.py # if you overpass the limit you won't get the web actualized
 $ chmod +x simple_telegram_advisor.py
 ```
@@ -33,7 +35,7 @@ $ pip3 install -r requirements.txt
 
 If you don't have pip install it (python3-pip).
 
-## Usage
+## Usage of stock notifications
 
 Open _"config/stock_list.py"_ and modify the dictionary as you want. For example:
 
@@ -52,6 +54,29 @@ $ ./simple_telegram_advisor.py
 ```
 
 Change the `RPi_relax_time` in the file _"config/RPi_utils.py"_ deppending on the CPU usage you want to be used and if you need very high precision use `RPi_relax_time = 0.0` (if you use a regular PC use `0.0` also).
+
+**IMPORTANT!!!** if you overpass the requests limit you won't get the web actualized.
+
+## Usage of crypto notifications
+
+Open _"config/crypto_list.py"_ and modify the dictionary as you want. For example:
+
+```python
+cryptos = {
+	"DOGE-USD" : {'high' : 0.45 , 'low' : 0.33},
+    "BTC-USD" : {'high' : 70000.0 , 'low' : 60000.0},
+}
+```
+
+Finally run the bot with the following comand.
+
+```bash
+$ ./simple_telegram_advisor_cryptos.py
+```
+
+Change the `CRYPTO_time` in the file _"config/RPi_utils.py"_ deppending on the CPU usage you want to be used and if you need very high precision use `CRYPTO_time = 10` (if you use a regular PC use `0.0` also).
+
+**IMPORTANT!!!** if you overpass the requests limit you won't get the web actualized.
 
 ## ToDo
 - [x] Buy notice
