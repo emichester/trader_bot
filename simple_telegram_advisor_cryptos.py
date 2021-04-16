@@ -46,10 +46,12 @@ def telegram_bot_sendtext(bot_message, chat_id):
 def retrieve_crypto_price():
     url = "https://finance.yahoo.com/cryptocurrencies/"
     
-    #logging.debug('WEB %s'%str(requests(url).text))
+    # logging.debug('WEB %s'%str(requests(url).text))
+    html = requests.get(url)
+    html = html.text
 
     # read html and look for tables
-    df = pd.read_html(url, encoding = 'utf-8', decimal=".", thousands=",")[0]
+    df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")[0]
 
     # symbol, name and price
     return df[['Symbol','Name','Price (Intraday)']]
