@@ -94,11 +94,11 @@ def main():
     logging.debug("\tMain thread ongoing at %d:%d"%(t.tm_hour,t.tm_min))
 
     import os, concurrent.futures
-    from config.stock_list import stocks
 
     cont = [0]
 
     while ongoing:
+        from config.stock_list import stocks
         t = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(see_price,

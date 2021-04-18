@@ -106,13 +106,13 @@ def main():
     logging.debug("\tMain thread ongoing at %d:%d"%(t.tm_hour,t.tm_min))
 
     import os, concurrent.futures
-    from config.crypto_list import cryptos
 
     global ongoing
 
     cont = [0]
 
     while ongoing:
+        from config.crypto_list import cryptos
         t = time.time()
         df = retrieve_crypto_price()
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
