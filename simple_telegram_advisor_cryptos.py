@@ -43,29 +43,36 @@ def telegram_bot_sendtext(bot_message, chat_id):
 
     return response.json()
 
-def retrieve_crypto_price():
+def retrieve_crypto_price(df_backup):
     url = "https://finance.yahoo.com/cryptocurrencies/"
     
     # logging.debug('WEB %s'%str(requests(url).text))
-    html = requests.get(url)
-    html = html.text
+    try:
+        html = requests.get(url)
+        html = html.text
 
-    # read html and look for tables
-    df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")
-#     logging.debug("""
-# #############################################################################
-# #############################################################################
-#                                 Dataframe
-# #############################################################################
-# #############################################################################
-# %s
-# #############################################################################
-# #############################################################################
-# """%df)
-    df = df[0]
+        # read html and look for tables
+        df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")
+        df = df[0]
+    except Exception as e:
+        print("Exception: %s"%e)
+        logging.warning("\tProblemas en el request, excepción %s"%e)
+        time.sleep(5)
+        try:
+            html = requests.get(url)
+            html = html.text
+
+            # read html and look for tables
+            df = pd.read_html(html, encoding = 'utf-8', decimal=".", thousands=",")
+            df = df[0]
+        except Exception as e:
+            print("Exception: %s"%e)
+            logging.warning("\tProblemas en el segundo intento, excepción %s"%e)
+            subset = df_backup
 
     # symbol, name and price
-    return df[['Symbol','Name','Price (Intraday)']]
+    subset = df[['Symbol','Name','Price (Intraday)']]
+    return subset
 
 def get_price(df, symbol):
     # select the ones you want
@@ -87,6 +94,7 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
         elif price <= PRICE_LOW:
             msg = "Compra que %s está a %.2f"%(symbol,price)
             telegram_bot_sendtext(msg, MI_CHAT_ID)
+
 
     except Exception as e:
         cont[0]+=1
@@ -110,11 +118,13 @@ def main():
     global ongoing
 
     cont = [0]
+    df_backup = pd.DataFrame()
 
     while ongoing:
         from config.crypto_list import cryptos
         t = time.time()
-        df = retrieve_crypto_price()
+        df = retrieve_crypto_price(df_backup)
+        df_backup = df
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(notify_by_price,
                 df,
