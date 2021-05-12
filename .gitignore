@@ -1,4 +1,7 @@
 ## main package
+# devel
+single_crypto_develop.py
+
 # environment
 .venv/
 venv.sh
