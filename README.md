@@ -15,14 +15,16 @@ TOKEN = 'your-bot-token'
 MI_CHAT_ID = you-chat-id ### int format e.g. 123456789
 " > config/data.py
 $ echo "
-RPi_relax_time = 0.5
+RPi_relax_time = 10.0
 # you have a limit of 2000 requests/hour or 48000 requests/day (market open 9 h/day)
 # time_h >= Nºstock * 3600 / 2000 --------> per hour
 # time_d >= Nºstock * 3600 * 9 / 48000 ---> per day
 # 
 # RPi_relax_time = max(time_h,time_d)
-# 
-# CRYPTO_time = 10
+
+CRYPTO_time = 10.0
+
+NOTIFICATION_TIME = 5.0*60
 " > config/RPi_utils.py # if you overpass the limit you won't get the web actualized
 $ chmod +x simple_telegram_advisor.py
 ```

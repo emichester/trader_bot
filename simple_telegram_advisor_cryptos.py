@@ -12,10 +12,11 @@ import threading
 import json
 
 from config.data import TOKEN, MI_CHAT_ID
-from config.RPi_utils import RPi_relax_time, CRYPTO_time 
+from config.RPi_utils import RPi_relax_time, CRYPTO_time , NOTIFICATION_TIME
 
 ## global variables
 ongoing = False
+notif_times = dict()
 
 class StoppableThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
@@ -88,12 +89,20 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
 
         logging.info("\t----> Th%i %s Precio: %s"%(th,symbol,str(price)))
 
-        if price >= PRICE_HIGH:
-            msg = "Vende que %s está a %.2f"%(symbol,price)
-            telegram_bot_sendtext(msg, MI_CHAT_ID)
-        elif price <= PRICE_LOW:
-            msg = "Compra que %s está a %.2f"%(symbol,price)
-            telegram_bot_sendtext(msg, MI_CHAT_ID)
+        global notif_times
+        TIME = notif_times[symbol]
+
+        if time.time()-TIME >= NOTIFICATION_TIME:
+            if price >= PRICE_HIGH:
+                msg = "Vende que %s está a %.2f"%(symbol,price)
+                notif_times[symbol] = time.time()
+                telegram_bot_sendtext(msg, MI_CHAT_ID)
+                logging.info("\t----> Th%i %s message: %s"%(th,symbol,msg))
+            elif price <= PRICE_LOW:
+                msg = "Compra que %s está a %.2f"%(symbol,price)
+                notif_times[symbol] = time.time()
+                telegram_bot_sendtext(msg, MI_CHAT_ID)
+                logging.info("\t----> Th%i %s message: %s"%(th,symbol,msg))
 
 
     except Exception as e:
@@ -102,6 +111,12 @@ def notify_by_price(df, symbol="DOGE-USD", PRICE_HIGH=25.0, PRICE_LOW=14.0, cont
 
     cont[0]+=1
     logging.warning("\tTh%i %s Problemas, excepción %i: %s"%(th,name,cont[0],str(e)))
+
+def create_notif_times(cryptos):
+    global notif_times
+    # if the headers are not like before create the dict again
+    if list(notif_times) != list(dict.fromkeys(cryptos)):
+        notif_times = dict.fromkeys(cryptos,0.0)
     
 def main():
     with open("debug_cryptos.log","w") as f:
@@ -122,6 +137,7 @@ def main():
 
     while ongoing:
         from config.crypto_list import cryptos
+        create_notif_times(cryptos)
         t = time.time()
         df = retrieve_crypto_price(df_backup)
         df_backup = df
