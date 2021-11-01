@@ -6,10 +6,11 @@ import logging
 import threading
 
 from config.data import TOKEN, MI_CHAT_ID
-from config.RPi_utils import RPi_relax_time
+from config.RPi_utils import RPi_relax_time, NOTIFICATION_TIME
 
 ## global variables
 ongoing = False
+notif_times = dict()
 
 class StoppableThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
@@ -67,12 +68,20 @@ def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=[0], th=0):
             logging.warning("\tTh%i %s price_AfHo = %s"%(th,name,debug_price_AfHo))
             price_AfHo = 0
 
-        if price >= PRICE_HIGH:
-            msg = "Vende que %s está a %.2f"%(name,price)
-            telegram_bot_sendtext(msg, MI_CHAT_ID)
-        elif price <= PRICE_LOW:
-            msg = "Compra que %s está a %.2f"%(name,price)
-            telegram_bot_sendtext(msg, MI_CHAT_ID)
+        global notif_times
+        TIME = notif_times[name]
+
+        if time.time()-TIME >= NOTIFICATION_TIME:
+            if price >= PRICE_HIGH:
+                msg = "Vende que %s está a %.2f"%(name,price)
+                notif_times[name] = time.time()
+                telegram_bot_sendtext(msg, MI_CHAT_ID)
+                logging.info("\t----> Th%i %s message: %s"%(th,name,msg))
+            elif price <= PRICE_LOW:
+                msg = "Compra que %s está a %.2f"%(name,price)
+                notif_times[name] = time.time()
+                telegram_bot_sendtext(msg, MI_CHAT_ID)
+                logging.info("\t----> Th%i %s message: %s"%(th,name,msg))
 
     except Exception as e:
         cont[0]+=1
@@ -82,6 +91,12 @@ def see_price(name="GME", PRICE_HIGH=225.0, PRICE_LOW=170.0, cont=[0], th=0):
         msg = "OJO con la API que está dando problemas"
         telegram_bot_sendtext(msg, MI_CHAT_ID)
         cont[0] = 0
+
+def create_notif_times(stocks):
+    global notif_times
+    # if the headers are not like before create the dict again
+    if list(notif_times) != list(dict.fromkeys(stocks)):
+        notif_times = dict.fromkeys(stocks,0.0)
     
 def main():
     with open("debug.log","w") as f:
@@ -99,6 +114,7 @@ def main():
 
     while ongoing:
         from config.stock_list import stocks
+        create_notif_times(stocks)
         t = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(32, os.cpu_count() + 4)) as executor: # optimally defined number of threads
             res = [executor.submit(see_price,
